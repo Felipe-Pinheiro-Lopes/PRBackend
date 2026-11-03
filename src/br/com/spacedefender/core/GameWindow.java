@@ -1,6 +1,7 @@
 package br.com.spacedefender.core;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 /**
  * Janela principal (JFrame) do jogo Space Defender: Galaxy Core.
@@ -16,8 +17,11 @@ public class GameWindow extends JFrame {
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
-        this.pack(); // Ajusta o tamanho da moldura da janela ao tamanho do painel interno (800x600)
-        this.setLocationRelativeTo(null); // Centraliza a janela na tela
+        this.pack();
+        this.setLocationRelativeTo(null);
         this.setVisible(true);
+
+        // Inicia o game loop após a janela estar visível
+        SwingUtilities.invokeLater(panel::startGame);
     }
 }
