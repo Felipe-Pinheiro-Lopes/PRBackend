@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Compilar Jogo",
+      "type": "shell",
+      "command": "mkdir -p bin && javac -d bin -sourcepath src src/br/com/spacedefender/Main.java",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Executar Jogo (Space Defender)",
+      "type": "shell",
+      "command": "java -cp bin br.com.spacedefender.Main",
+      "dependsOn": "Compilar Jogo",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

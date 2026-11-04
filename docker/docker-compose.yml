@@ -11,6 +11,7 @@ services:
       - TZ=America/Sao_Paulo
       - SUBFOLDER=/
       - TITLE=Space Defender Dev Environment
+      - DONT_PROMPT_WSL_INSTALL=1
     volumes:
       # Persistência de configurações e extensões do VS Code
       - ./data:/config

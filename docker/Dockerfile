@@ -1,5 +1,7 @@
 FROM lscr.io/linuxserver/webtop:ubuntu-xfce
 
+ENV DONT_PROMPT_WSL_INSTALL=1
+
 # Atualiza pacotes e instala OpenJDK 21, Git, ferramentas de compilação e dependências de GUI
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-21-jdk \
@@ -34,7 +36,7 @@ Version=1.0\n\
 Type=Application\n\
 Name=Visual Studio Code\n\
 Comment=Editor de Código Java\n\
-Exec=/usr/bin/code --no-sandbox --unity-launch /config/workspace\n\
+Exec=env DONT_PROMPT_WSL_INSTALL=1 /usr/bin/code --no-sandbox /config/workspace\n\
 Icon=vscode\n\
 Path=/config/workspace\n\
 Terminal=false\n\
