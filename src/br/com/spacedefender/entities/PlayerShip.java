@@ -2,7 +2,9 @@ package br.com.spacedefender.entities;
 
 import br.com.spacedefender.GameObject;
 import br.com.spacedefender.projectiles.LaserPulse;
+import br.com.spacedefender.projectiles.PlasmaBall;
 import br.com.spacedefender.projectiles.Projectile;
+import br.com.spacedefender.projectiles.WeaponType;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
@@ -11,14 +13,14 @@ import java.util.List;
 
 /**
  * Representa a nave controlada pelo jogador.
- * Implementa movimentação contínua e suave via controle de estados booleanos de teclas
- * e limites de tela para impedir que a nave ultrapasse os limites jogáveis.
+ * Implementa movimentação contínua e suave via controle de estados booleanos de teclas,
+ * limites de tela, alternância polimórfica de armas e gerenciamento de projéteis.
  */
 public class PlayerShip extends GameObject {
     private int lives = 3;
     private int score = 0;
     private long lastShotTime = 0;
-    private static final int SHOT_COOLDOWN = 200; // ms entre tiros
+    private WeaponType activeWeapon = WeaponType.LASER;
     private List<Projectile> projectiles = new ArrayList<>();
 
     // Variáveis booleanas para movimentação fluida (Dica do Mestre)
@@ -36,7 +38,7 @@ public class PlayerShip extends GameObject {
     }
 
     /**
-     * Atualiza o estado das teclas pressionadas/liberadas (Setas ou W, A, S, D).
+     * Atualiza o estado das teclas pressionadas/liberadas (Setas ou W, A, S, D, Barra de Espaço e 1, 2, Q).
      * @param keyCode Código da tecla capturada pelo KeyListener
      * @param pressed true se pressionada (keyPressed), false se liberada (keyReleased)
      */
@@ -58,16 +60,32 @@ public class PlayerShip extends GameObject {
                 shoot();
             }
         }
+        // Alternância de Armas (Polimorfismo dinâmico)
+        if (pressed) {
+            if (keyCode == KeyEvent.VK_1) {
+                setActiveWeapon(WeaponType.LASER);
+            } else if (keyCode == KeyEvent.VK_2) {
+                setActiveWeapon(WeaponType.PLASMA);
+            } else if (keyCode == KeyEvent.VK_Q) {
+                switchWeapon();
+            }
+        }
     }
 
     /**
-     * Dispara projéteis respeitando o tempo de recarga (cooldown).
+     * Dispara projéteis respeitando a cadência específica (cooldown) da arma ativa.
+     * Instancia o projétil correspondente e adiciona à coleção genérica de Projectile.
      */
     private void shoot() {
         long now = System.currentTimeMillis();
-        if (now - lastShotTime >= SHOT_COOLDOWN) {
-            // Dispara o projétil da arma ativa alinhado com o bico da nave
-            projectiles.add(new LaserPulse(getX() + getWidth() / 2 - 2, getY() - 14));
+        if (now - lastShotTime >= activeWeapon.getCooldownMs()) {
+            if (activeWeapon == WeaponType.LASER) {
+                // Laser Pulse: rápido, fino, centrado no bico
+                projectiles.add(new LaserPulse(getX() + getWidth() / 2 - 2, getY() - 14));
+            } else if (activeWeapon == WeaponType.PLASMA) {
+                // Plasma Ball: pesado, esfera maior, centrado no bico
+                projectiles.add(new PlasmaBall(getX() + getWidth() / 2 - 6, getY() - 14));
+            }
             lastShotTime = now;
         }
     }
@@ -202,5 +220,17 @@ public class PlayerShip extends GameObject {
     public boolean isRightPressed() { return rightPressed; }
     public void setRightPressed(boolean rightPressed) { this.rightPressed = rightPressed; }
 
+    public WeaponType getActiveWeapon() {
+        return activeWeapon;
+    }
 
+    public void setActiveWeapon(WeaponType weapon) {
+        if (weapon != null) {
+            this.activeWeapon = weapon;
+        }
+    }
+
+    public void switchWeapon() {
+        this.activeWeapon = (activeWeapon == WeaponType.LASER) ? WeaponType.PLASMA : WeaponType.LASER;
+    }
 }

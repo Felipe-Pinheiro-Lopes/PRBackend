@@ -113,6 +113,18 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
         // Desenha a nave do jogador
         player.draw(g2d);
 
+        // HUD: Indicador da Arma Ativa (Demonstração visual do Polimorfismo)
+        g2d.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 13));
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("Arma [1/2/Q]: ", 20, 30);
+        if (player.getActiveWeapon() == br.com.spacedefender.projectiles.WeaponType.LASER) {
+            g2d.setColor(new Color(0, 220, 255));
+            g2d.drawString("LASER PULSE (Veloz | Dano: 10)", 125, 30);
+        } else {
+            g2d.setColor(new Color(255, 230, 0));
+            g2d.drawString("PLASMA BALL (Pesado | Dano: 25)", 125, 30);
+        }
+
         // Sincroniza a fila gráfica do sistema operacional (garante 60 FPS suaves no Linux/X11 e Windows)
         Toolkit.getDefaultToolkit().sync();
     }
