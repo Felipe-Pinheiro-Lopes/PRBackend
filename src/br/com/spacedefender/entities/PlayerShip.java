@@ -1,6 +1,8 @@
 package br.com.spacedefender.entities;
 
 import br.com.spacedefender.GameObject;
+import br.com.spacedefender.projectiles.LaserPulse;
+import br.com.spacedefender.projectiles.Projectile;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
@@ -64,14 +66,15 @@ public class PlayerShip extends GameObject {
     private void shoot() {
         long now = System.currentTimeMillis();
         if (now - lastShotTime >= SHOT_COOLDOWN) {
-            projectiles.add(new Projectile(getX() + getWidth() / 2 - 2, getY()));
+            // Dispara o projétil da arma ativa alinhado com o bico da nave
+            projectiles.add(new LaserPulse(getX() + getWidth() / 2 - 2, getY() - 14));
             lastShotTime = now;
         }
     }
 
     /**
-     * Atualiza as coordenadas x e y da nave conforme as teclas ativas no Game Loop
-     * e impede que ela saia dos limites da janela.
+     * Atualiza as coordenadas x e y da nave conforme as teclas ativas no Game Loop,
+     * impede que ela saia dos limites da janela e gerencia o ciclo de vida dos projéteis.
      */
     @Override
     public void update() {
@@ -103,11 +106,13 @@ public class PlayerShip extends GameObject {
             y = 600 - height;
         }
 
-        // Atualiza os projéteis e remove aqueles que já saíram da tela
-        projectiles.removeIf(p -> {
+        // Atualização polimórfica dos projéteis
+        for (Projectile p : projectiles) {
             p.update();
-            return p.isOffScreen();
-        });
+        }
+
+        // Descarte seguro de projéteis que saíram dos limites (evita ConcurrentModificationException)
+        projectiles.removeIf(Projectile::isOffScreen);
     }
 
     /**
@@ -197,29 +202,5 @@ public class PlayerShip extends GameObject {
     public boolean isRightPressed() { return rightPressed; }
     public void setRightPressed(boolean rightPressed) { this.rightPressed = rightPressed; }
 
-    /**
-     * Projétil temporário disparado pela nave (será refatorado na Sprint 2).
-     */
-    public static class Projectile extends GameObject {
-        private static final int PROJ_SPEED = 10;
 
-        public Projectile(int x, int y) {
-            super(x, y, 4, 10, PROJ_SPEED);
-        }
-
-        @Override
-        public void update() {
-            setY(getY() - getSpeed());
-        }
-
-        @Override
-        public void draw(Graphics2D g2d) {
-            g2d.setColor(Color.YELLOW);
-            g2d.fillRect(getX(), getY(), getWidth(), getHeight());
-        }
-
-        public boolean isOffScreen() {
-            return getY() + getHeight() < 0;
-        }
-    }
 }
