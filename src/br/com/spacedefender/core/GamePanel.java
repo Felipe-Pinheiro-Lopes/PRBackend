@@ -3,6 +3,7 @@ package br.com.spacedefender.core;
 import br.com.spacedefender.enemies.EnemyShip;
 import br.com.spacedefender.entities.PlayerShip;
 import br.com.spacedefender.managers.CollisionManager;
+import br.com.spacedefender.managers.WaveManager;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import java.awt.Color;
@@ -35,6 +36,7 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
     private PlayerShip player;
     private List<EnemyShip> enemies = new ArrayList<>();
     private CollisionManager collisionManager = new CollisionManager();
+    private WaveManager waveManager = new WaveManager();
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -90,10 +92,13 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
     }
 
     /**
-     * Atualiza a lógica do jogo (física da nave, projéteis, naves inimigas e resolução de colisões).
+     * Atualiza a lógica do jogo (física da nave, ondas de inimigos, projéteis e resolução de colisões).
      */
     public void update() {
         player.update();
+
+        // Gera novas ondas de invasores inimigos
+        waveManager.update(enemies);
 
         // Atualização polimórfica das naves inimigas
         for (EnemyShip enemy : enemies) {
@@ -150,10 +155,10 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
         g2d.setColor(new Color(60, 60, 80));
         g2d.drawLine(0, 48, SCREEN_WIDTH, 48);
 
-        // 1. Placar (Score)
+        // 1. Placar (Score) e Onda Atual
         g2d.setFont(new Font("SansSerif", Font.BOLD, 14));
         g2d.setColor(new Color(255, 215, 0)); // Dourado
-        g2d.drawString(String.format("SCORE: %05d", player.getScore()), 20, 22);
+        g2d.drawString(String.format("SCORE: %05d   |   ONDA %d", player.getScore(), waveManager.getCurrentWave()), 20, 22);
 
         // 2. Indicador da Arma Ativa (Polimorfismo)
         g2d.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -221,6 +226,10 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
 
     public CollisionManager getCollisionManager() {
         return collisionManager;
+    }
+
+    public WaveManager getWaveManager() {
+        return waveManager;
     }
 
     public Timer getGameTimer() {
