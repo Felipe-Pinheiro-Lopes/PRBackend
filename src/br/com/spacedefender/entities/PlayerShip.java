@@ -18,6 +18,8 @@ import java.util.List;
  */
 public class PlayerShip extends GameObject {
     private int lives = 3;
+    private int maxHealth = 100;
+    private int health = 100;
     private int score = 0;
     private long lastShotTime = 0;
     private WeaponType activeWeapon = WeaponType.LASER;
@@ -205,6 +207,26 @@ public class PlayerShip extends GameObject {
     public List<Projectile> getProjectiles() { return projectiles; }
     public int getLives() { return lives; }
     public void loseLife() { lives--; }
+    public int getHealth() { return health; }
+    public void setHealth(int health) { this.health = Math.max(0, Math.min(maxHealth, health)); }
+    public int getMaxHealth() { return maxHealth; }
+    public void setMaxHealth(int maxHealth) { this.maxHealth = Math.max(1, maxHealth); }
+    public boolean isAlive() { return lives > 0; }
+
+    public void takeDamage(int damage) {
+        if (damage > 0) {
+            this.health -= damage;
+            if (this.health <= 0) {
+                loseLife();
+                if (this.lives > 0) {
+                    this.health = maxHealth;
+                } else {
+                    this.health = 0;
+                }
+            }
+        }
+    }
+
     public int getScore() { return score; }
     public void addScore(int points) { score += points; }
 
