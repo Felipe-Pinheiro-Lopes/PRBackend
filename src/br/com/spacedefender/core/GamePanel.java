@@ -4,6 +4,7 @@ import br.com.spacedefender.enemies.EnemyShip;
 import br.com.spacedefender.entities.PlayerShip;
 import br.com.spacedefender.managers.CollisionManager;
 import br.com.spacedefender.managers.WaveManager;
+import br.com.spacedefender.projectiles.EnemyProjectile;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import java.awt.Color;
@@ -35,6 +36,7 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
     private Timer gameTimer;
     private PlayerShip player;
     private List<EnemyShip> enemies = new ArrayList<>();
+    private List<EnemyProjectile> enemyProjectiles = new ArrayList<>();
     private CollisionManager collisionManager = new CollisionManager();
     private WaveManager waveManager = new WaveManager();
     private SpaceBackground background;
@@ -95,7 +97,7 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
     }
 
     /**
-     * Atualiza a lógica do jogo (física da nave, ondas de inimigos, projéteis, resolução de colisões e fundo estelar).
+     * Atualiza a lógica do jogo (física da nave, IA inimiga, projéteis mútuos e resolução de colisões).
      */
     public void update() {
         // Atualiza a movimentação do fundo espacial Parallax
@@ -106,13 +108,19 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
         // Gera novas ondas de invasores inimigos
         waveManager.update(enemies);
 
-        // Atualização polimórfica das naves inimigas
+        // Atualização polimórfica e IA das naves inimigas
         for (EnemyShip enemy : enemies) {
-            enemy.update();
+            enemy.updateAI(player, enemyProjectiles);
         }
 
-        // Resolução de colisões AABB (Tiros vs Inimigos e Inimigos vs Jogador)
-        collisionManager.checkCollisions(player, enemies);
+        // Atualização da física dos projéteis disparados pelos inimigos
+        for (EnemyProjectile ep : enemyProjectiles) {
+            ep.update();
+        }
+        enemyProjectiles.removeIf(EnemyProjectile::isOffScreen);
+
+        // Resolução de colisões AABB (Tiros vs Inimigos, Inimigos vs Jogador e Tiros Inimigos vs Jogador)
+        collisionManager.checkCollisions(player, enemies, enemyProjectiles);
     }
 
     /**
@@ -144,7 +152,12 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
             enemy.draw(g2d);
         }
 
-        // 3. Desenha a nave do jogador
+        // 3. Desenha projéteis disparados pelos inimigos
+        for (EnemyProjectile ep : enemyProjectiles) {
+            ep.draw(g2d);
+        }
+
+        // 4. Desenha a nave do jogador
         player.draw(g2d);
 
         // --- HUD SUPERIOR COMPLETO ---
@@ -231,6 +244,10 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
 
     public List<EnemyShip> getEnemies() {
         return enemies;
+    }
+
+    public List<EnemyProjectile> getEnemyProjectiles() {
+        return enemyProjectiles;
     }
 
     public CollisionManager getCollisionManager() {

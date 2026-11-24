@@ -16,17 +16,43 @@ public class ArmoredCruiser extends EnemyShip {
     private static final int DEFAULT_POINTS = 250;
 
     private double exactY;
+    private long lastShotTime = 0;
+    private boolean shieldTriggered = false;
 
     public ArmoredCruiser(int x, int y) {
         super(x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_SPEED, DEFAULT_HEALTH, DEFAULT_POINTS);
         this.exactY = y;
+        this.lastShotTime = System.currentTimeMillis() + (long)(Math.random() * 1000);
     }
 
     @Override
     public void update() {
-        // Desce continuamente de forma pesada e cadenciada (0.8 px/frame)
+        // Mecânica 1: Desce continuamente de forma pesada e cadenciada (0.8 px/frame)
         exactY += 0.8;
         setY((int) exactY);
+
+        // Mecânica 2: Ativação automática de Escudo Defletor quando integridade cai abaixo de 60%
+        if (!shieldTriggered && getHealth() <= getMaxHealth() * 0.6) {
+            activateShield(2500); // 2.5s de invulnerabilidade total com barreira de energia
+            shieldTriggered = true;
+        }
+    }
+
+    @Override
+    public void updateAI(br.com.spacedefender.entities.PlayerShip player, java.util.List<br.com.spacedefender.projectiles.EnemyProjectile> enemyProjectiles) {
+        update();
+
+        if (enemyProjectiles == null) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        // Mecânica 3 & 4: Disparo duplo periódico pesado a cada 2.4s a partir dos canhões das asas
+        if (getY() > 50 && getY() < 480 && now - lastShotTime >= 2400) {
+            enemyProjectiles.add(new br.com.spacedefender.projectiles.EnemyProjectile(getX() + 10, getY() + getHeight() - 4));
+            enemyProjectiles.add(new br.com.spacedefender.projectiles.EnemyProjectile(getX() + getWidth() - 14, getY() + getHeight() - 4));
+            lastShotTime = now;
+        }
     }
 
     @Override
@@ -86,5 +112,8 @@ public class ArmoredCruiser extends EnemyShip {
         g2d.fillRect(x, barY, currentBarW, barHeight);
         g2d.setColor(Color.WHITE);
         g2d.drawRect(x, barY, barWidth, barHeight);
+
+        // Renderiza barreira de energia se o escudo estiver ativado
+        drawShieldIfActive(g2d);
     }
 }

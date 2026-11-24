@@ -17,6 +17,9 @@ public class ScoutShip extends EnemyShip {
 
     private double centerX;
     private double exactY;
+    private boolean hasShot = false;
+    private boolean hasEvaded = false;
+    private double currentSpeedY = 1.8;
 
     public ScoutShip(int x, int y) {
         super(x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_SPEED, DEFAULT_HEALTH, DEFAULT_POINTS);
@@ -26,21 +29,50 @@ public class ScoutShip extends EnemyShip {
 
     @Override
     public void update() {
-        // Desce de forma compassada pelo eixo vertical (velocidade rebalanceada: 1.8 px/frame)
-        exactY += 1.8;
+        // Mecânica 1: Deslocamento vertical com aceleração progressiva
+        exactY += currentSpeedY;
         setY((int) exactY);
 
-        // Movimento em zigue-zague senoidal suave ao redor do centro horizontal
+        // Mecânica 2: Movimento senoidal dinâmico em zigue-zague
         double oscillation = Math.sin(getY() * 0.04) * 32.0;
         int newX = (int) (centerX + oscillation);
 
-        // Previne colisão estrita fora das bordas laterais
         if (newX < 10) {
             newX = 10;
         } else if (newX > 800 - getWidth() - 10) {
             newX = 800 - getWidth() - 10;
         }
         setX(newX);
+
+        // Mecânica 3: Arrancada tática (Speed Burst) após ultrapassar metade da tela
+        if (getY() > 280 && currentSpeedY < 2.5) {
+            currentSpeedY = 2.5;
+        }
+    }
+
+    @Override
+    public void updateAI(br.com.spacedefender.entities.PlayerShip player, java.util.List<br.com.spacedefender.projectiles.EnemyProjectile> enemyProjectiles) {
+        update();
+
+        if (player == null || enemyProjectiles == null) {
+            return;
+        }
+
+        // Mecânica 4: Esquiva lateral evasiva caso o player esteja na linha de tiro frontal
+        if (!hasEvaded && getY() > 100 && getY() < 350) {
+            if (Math.abs((getX() + getWidth() / 2) - (player.getX() + player.getWidth() / 2)) < 35) {
+                centerX += (centerX > 400) ? -55 : 55;
+                hasEvaded = true;
+            }
+        }
+
+        // Mecânica 5: Disparo de pulso de laser inimigo oportuno ao se aproximar
+        if (!hasShot && getY() > 140 && getY() < 420) {
+            if (Math.abs((getX() + getWidth() / 2) - (player.getX() + player.getWidth() / 2)) < 80) {
+                enemyProjectiles.add(new br.com.spacedefender.projectiles.EnemyProjectile(getX() + getWidth() / 2 - 3, getY() + getHeight()));
+                hasShot = true;
+            }
+        }
     }
 
     @Override

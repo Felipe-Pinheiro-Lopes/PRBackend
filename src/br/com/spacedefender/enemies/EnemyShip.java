@@ -12,6 +12,8 @@ public abstract class EnemyShip extends GameObject {
     private int maxHealth;
     private int pointValue;
     private double speedY;
+    private boolean shieldActive = false;
+    private long shieldEndTime = 0;
 
     public EnemyShip(int x, int y, int width, int height, int speed, int health, int pointValue) {
         super(x, y, width, height, speed);
@@ -28,6 +30,15 @@ public abstract class EnemyShip extends GameObject {
     public abstract void update();
 
     /**
+     * Ciclo de IA e tomada de decisão contextualizada (disparo de projéteis, esquiva, mira no jogador).
+     * @param player Referência da nave do jogador
+     * @param enemyProjectiles Coleção compartilhada de tiros inimigos
+     */
+    public void updateAI(br.com.spacedefender.entities.PlayerShip player, java.util.List<br.com.spacedefender.projectiles.EnemyProjectile> enemyProjectiles) {
+        update();
+    }
+
+    /**
      * Renderização visual polimórfica específica de cada modelo de nave inimiga.
      */
     @Override
@@ -41,15 +52,46 @@ public abstract class EnemyShip extends GameObject {
     }
 
     /**
-     * Aplica dano à nave inimiga respeitando o limite mínimo de zero.
+     * Aplica dano à nave inimiga respeitando o limite mínimo de zero e o escudo de energia.
      * @param damage Quantidade de pontos de vida a subtrair
      */
     public void takeDamage(int damage) {
         if (damage > 0) {
+            // Se o escudo defletor de energia estiver ativo, absorve 100% do impacto
+            if (isShieldActive()) {
+                return;
+            }
             this.health -= damage;
             if (this.health < 0) {
                 this.health = 0;
             }
+        }
+    }
+
+    /**
+     * Ativa barreira de força temporária.
+     */
+    public void activateShield(long durationMs) {
+        this.shieldActive = true;
+        this.shieldEndTime = System.currentTimeMillis() + durationMs;
+    }
+
+    public boolean isShieldActive() {
+        if (shieldActive && System.currentTimeMillis() > shieldEndTime) {
+            shieldActive = false;
+        }
+        return shieldActive;
+    }
+
+    /**
+     * Desenha campo de força protetor sobre o casco caso ativo.
+     */
+    protected void drawShieldIfActive(Graphics2D g2d) {
+        if (isShieldActive()) {
+            g2d.setColor(new java.awt.Color(0, 220, 255, 120));
+            g2d.fillOval(getX() - 6, getY() - 6, getWidth() + 12, getHeight() + 12);
+            g2d.setColor(java.awt.Color.WHITE);
+            g2d.drawOval(getX() - 6, getY() - 6, getWidth() + 12, getHeight() + 12);
         }
     }
 

@@ -3,6 +3,7 @@ package br.com.spacedefender.managers;
 import br.com.spacedefender.enemies.ArmoredCruiser;
 import br.com.spacedefender.enemies.BossShip;
 import br.com.spacedefender.enemies.EnemyShip;
+import br.com.spacedefender.enemies.KamikazeDrone;
 import br.com.spacedefender.enemies.ScoutShip;
 import java.util.List;
 import java.util.Random;
@@ -56,15 +57,17 @@ public class WaveManager {
 
     /**
      * Sorteia as coordenadas de entrada e instancia polimorficamente uma nave inimiga,
-     * ocasionalmente gerando pares ou esquadrões para elevar a densidade de combate.
+     * alternando entre Scouts, Cruzadores Blindados e Drones Kamikazes teleguiados.
      */
     private void spawnEnemy(List<EnemyShip> enemies) {
         int spawnX = 60 + random.nextInt(660);
         int spawnY = -50;
 
         double roll = random.nextDouble();
-        if (roll < 0.30 || (currentWave >= 3 && roll < 0.45)) {
+        if (roll < 0.25 || (currentWave >= 3 && roll < 0.35)) {
             enemies.add(new ArmoredCruiser(spawnX, spawnY));
+        } else if (roll < 0.50 || (currentWave >= 2 && roll < 0.65)) {
+            enemies.add(new KamikazeDrone(spawnX, spawnY));
         } else {
             enemies.add(new ScoutShip(spawnX, spawnY));
 
