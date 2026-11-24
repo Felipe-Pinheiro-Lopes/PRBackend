@@ -1,13 +1,13 @@
 FROM lscr.io/linuxserver/webtop:ubuntu-xfce
 
+ENV DONT_PROMPT_WSL_INSTALL=1
+
 # Atualiza pacotes e instala OpenJDK 21, Git, ferramentas de compilação e dependências de GUI
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-21-jdk \
     git \
     curl \
     wget \
-    gpg \
-    apt-transport-https \
     ca-certificates \
     build-essential \
     mesa-utils \
@@ -17,13 +17,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalação oficial do VS Code (Visual Studio Code) para Linux
-RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /packages.microsoft.gpg && \
-    install -D -o root -g root -m 644 /packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg && \
-    echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list && \
-    rm -f /packages.microsoft.gpg && \
-    apt-get update && apt-get install -y --no-install-recommends code && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Instalação oficial do VS Code (Visual Studio Code) via pacote .deb direto
+RUN curl -L -o /tmp/vscode.deb "https://update.code.visualstudio.com/latest/linux-deb-x64/stable" && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends /tmp/vscode.deb && \
+    rm -f /tmp/vscode.deb && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Script de inicialização automática: cria atalhos no Desktop para o VS Code e Workspace do projeto
 RUN mkdir -p /etc/cont-init.d && \
@@ -36,7 +36,7 @@ Version=1.0\n\
 Type=Application\n\
 Name=Visual Studio Code\n\
 Comment=Editor de Código Java\n\
-Exec=/usr/bin/code --no-sandbox --unity-launch /config/workspace\n\
+Exec=env DONT_PROMPT_WSL_INSTALL=1 /usr/bin/code --no-sandbox /config/workspace\n\
 Icon=vscode\n\
 Path=/config/workspace\n\
 Terminal=false\n\
