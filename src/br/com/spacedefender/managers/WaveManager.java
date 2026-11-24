@@ -12,11 +12,11 @@ import java.util.Random;
  * Controla o equilíbrio de dificuldade, alternância polimórfica de naves geradas e progressão de ondas.
  */
 public class WaveManager {
-private int currentWave = 1;
+    private int currentWave = 1;
     private long lastSpawnTime = 0;
-    private long spawnIntervalMs = 2000;
+    private long spawnIntervalMs = 1100; // Cadência acelerada de surgimento (1.1s)
     private int enemiesSpawnedInWave = 0;
-    private int enemiesPerWave = 8;
+    private int enemiesPerWave = 14;     // Quantidade expandida de invasores por onda
     private final Random random = new Random();
     private static final int BOSS_WAVE = 5;
     private boolean bossSpawned = false;
@@ -55,19 +55,25 @@ private int currentWave = 1;
     }
 
     /**
-     * Sorteia as coordenadas de entrada e instancia polimorficamente uma nave inimiga.
+     * Sorteia as coordenadas de entrada e instancia polimorficamente uma nave inimiga,
+     * ocasionalmente gerando pares ou esquadrões para elevar a densidade de combate.
      */
     private void spawnEnemy(List<EnemyShip> enemies) {
-        // Coordenada horizontal aleatória dentro da área jogável (entre 60 e 720 px)
         int spawnX = 60 + random.nextInt(660);
         int spawnY = -50;
 
-        // Probabilidade de surgimento: 75% ScoutShip (ágil) / 25% ArmoredCruiser (pesado)
         double roll = random.nextDouble();
-        if (roll < 0.25 || (currentWave >= 3 && roll < 0.40)) {
+        if (roll < 0.30 || (currentWave >= 3 && roll < 0.45)) {
             enemies.add(new ArmoredCruiser(spawnX, spawnY));
         } else {
             enemies.add(new ScoutShip(spawnX, spawnY));
+
+            // 35% de chance de spawnar uma segunda nave de apoio em formação próxima
+            if (random.nextDouble() < 0.35 && enemiesSpawnedInWave + 1 < enemiesPerWave) {
+                int companionX = (spawnX > 400) ? spawnX - 70 : spawnX + 70;
+                enemies.add(new ScoutShip(companionX, spawnY - 30));
+                enemiesSpawnedInWave++;
+            }
         }
     }
 
@@ -77,11 +83,11 @@ private int currentWave = 1;
     private void advanceWave() {
         currentWave++;
         enemiesSpawnedInWave = 0;
-        enemiesPerWave += 4; // Aumenta a quantidade de inimigos por onda
+        enemiesPerWave += 6; // Adiciona 6 inimigos a mais a cada onda
 
-        // Reduz o intervalo de spawn para elevar o dinamismo (mínimo de 900ms)
-        spawnIntervalMs = Math.max(900, spawnIntervalMs - 150);
-        lastSpawnTime = System.currentTimeMillis() + 1000; // Breve pausa de 1s entre ondas
+        // Reduz o intervalo de spawn progressivamente (mínimo de 650ms)
+        spawnIntervalMs = Math.max(650, spawnIntervalMs - 100);
+        lastSpawnTime = System.currentTimeMillis() + 1000;
     }
 
     /**
@@ -90,8 +96,8 @@ private int currentWave = 1;
     public void reset() {
         this.currentWave = 1;
         this.enemiesSpawnedInWave = 0;
-        this.enemiesPerWave = 8;
-        this.spawnIntervalMs = 2000;
+        this.enemiesPerWave = 14;
+        this.spawnIntervalMs = 1100;
         this.lastSpawnTime = 0;
         this.bossSpawned = false;
     }

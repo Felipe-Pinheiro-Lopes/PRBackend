@@ -11,24 +11,27 @@ import java.awt.Graphics2D;
 public class ScoutShip extends EnemyShip {
     private static final int DEFAULT_WIDTH = 32;
     private static final int DEFAULT_HEIGHT = 28;
-    private static final int DEFAULT_SPEED = 3;
+    private static final int DEFAULT_SPEED = 2;
     private static final int DEFAULT_HEALTH = 10;
     private static final int DEFAULT_POINTS = 100;
 
     private double centerX;
+    private double exactY;
 
     public ScoutShip(int x, int y) {
         super(x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_SPEED, DEFAULT_HEALTH, DEFAULT_POINTS);
         this.centerX = x;
+        this.exactY = y;
     }
 
     @Override
     public void update() {
-        // Desce pelo eixo vertical
-        setY(getY() + getSpeed());
+        // Desce de forma compassada pelo eixo vertical (velocidade rebalanceada: 1.8 px/frame)
+        exactY += 1.8;
+        setY((int) exactY);
 
         // Movimento em zigue-zague senoidal suave ao redor do centro horizontal
-        double oscillation = Math.sin(getY() * 0.05) * 28.0;
+        double oscillation = Math.sin(getY() * 0.04) * 32.0;
         int newX = (int) (centerX + oscillation);
 
         // Previne colisão estrita fora das bordas laterais

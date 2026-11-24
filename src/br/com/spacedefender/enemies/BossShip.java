@@ -12,7 +12,7 @@ public class BossShip extends EnemyShip {
     private double pulseAnim;
 
     public BossShip(int x, int y) {
-        super(x, y, 160, 110, 1, 6000, 2000);
+        super(x, y, 160, 110, 1, 1400, 2000);
         this.phaseTwo = false;
         this.movingRight = true;
         this.pulseAnim = 0.0;
