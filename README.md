@@ -11,7 +11,7 @@ Projeto prático desenvolvido para a disciplina **Desenvolvimento Back-End - JAV
 | Integrante | Função / Responsabilidade Principal | GitHub |
 | :--- | :--- | :--- |
 | **Felipe Lopes** | Arquitetura de Core, Game Loop, Janela, Colisões e Máquina de Estados | [@Felipe-Pinheiro-Lopes](https://github.com/Felipe-Pinheiro-Lopes) |
-| **Bianca** | Modelagem de Entidades, Hierarquia de Tiros, Inimigos e Boss Final | Integrante da Dupla |
+| **Bianca Cirilo** | Modelagem de Entidades, Hierarquia de Tiros, Inimigos e Boss Final | [@biancaciriloads](https://github.com/biancaciriloads) |
 
 ---
 
