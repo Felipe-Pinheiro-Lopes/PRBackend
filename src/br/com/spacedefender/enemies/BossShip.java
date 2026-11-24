@@ -10,12 +10,14 @@ public class BossShip extends EnemyShip {
     private boolean phaseTwo;
     private boolean movingRight;
     private double pulseAnim;
+    private long lastShotTime = 0;
 
     public BossShip(int x, int y) {
         super(x, y, 160, 110, 1, 1400, 2000);
         this.phaseTwo = false;
         this.movingRight = true;
         this.pulseAnim = 0.0;
+        this.lastShotTime = System.currentTimeMillis();
     }
 
     @Override
@@ -47,6 +49,37 @@ public class BossShip extends EnemyShip {
 
         if (getY() < 75) {
             setY(getY() + (int) Math.ceil(getSpeedY()));
+        }
+    }
+
+    @Override
+    public void updateAI(br.com.spacedefender.entities.PlayerShip player, java.util.List<br.com.spacedefender.projectiles.EnemyProjectile> enemyProjectiles) {
+        update();
+
+        if (enemyProjectiles == null) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        long cooldown = phaseTwo ? 1000 : 1700;
+
+        if (now - lastShotTime >= cooldown) {
+            int w = getWidth();
+            int h = getHeight();
+            int x = getX();
+            int y = getY();
+
+            if (!phaseTwo) {
+                // Fase 1: Disparo duplo pesado das garras laterais
+                enemyProjectiles.add(new br.com.spacedefender.projectiles.EnemyProjectile(x + w / 8, y + h, 6, 20));
+                enemyProjectiles.add(new br.com.spacedefender.projectiles.EnemyProjectile(x + w * 7 / 8, y + h, 6, 20));
+            } else {
+                // Fase 2 (Modo Fúria): Disparo triplo concentrado em leque
+                enemyProjectiles.add(new br.com.spacedefender.projectiles.EnemyProjectile(x + w / 8, y + h, 7, 25));
+                enemyProjectiles.add(new br.com.spacedefender.projectiles.EnemyProjectile(x + w / 2 - 3, y + h + 8, 8, 30));
+                enemyProjectiles.add(new br.com.spacedefender.projectiles.EnemyProjectile(x + w * 7 / 8, y + h, 7, 25));
+            }
+            lastShotTime = now;
         }
     }
 
