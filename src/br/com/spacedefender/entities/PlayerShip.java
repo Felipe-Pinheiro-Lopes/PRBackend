@@ -1,6 +1,8 @@
 package br.com.spacedefender.entities;
 
 import br.com.spacedefender.GameObject;
+import br.com.spacedefender.audio.SoundManager;
+import br.com.spacedefender.audio.SoundType;
 import br.com.spacedefender.projectiles.LaserPulse;
 import br.com.spacedefender.projectiles.PlasmaBall;
 import br.com.spacedefender.projectiles.Projectile;
@@ -98,6 +100,7 @@ public class PlayerShip extends GameObject {
                     // Laser Pulse padrão centrado no bico
                     projectiles.add(new LaserPulse(getX() + getWidth() / 2 - 2, getY() - 14));
                 }
+                SoundManager.getInstance().play(SoundType.LASER);
             } else if (activeWeapon == WeaponType.PLASMA) {
                 if (tripleShotActive) {
                     // Tríade de Plasma destrutiva
@@ -108,6 +111,7 @@ public class PlayerShip extends GameObject {
                     // Plasma Ball padrão centrado no bico
                     projectiles.add(new PlasmaBall(getX() + getWidth() / 2 - 6, getY() - 14));
                 }
+                SoundManager.getInstance().play(SoundType.PLASMA);
             }
             lastShotTime = now;
         }
@@ -268,6 +272,7 @@ public class PlayerShip extends GameObject {
         }
 
         if (damage > 0) {
+            SoundManager.getInstance().play(SoundType.PLAYER_HIT);
             this.health -= damage;
             if (this.health <= 0) {
                 loseLife();

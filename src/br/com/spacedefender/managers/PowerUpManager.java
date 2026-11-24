@@ -1,5 +1,7 @@
 package br.com.spacedefender.managers;
 
+import br.com.spacedefender.audio.SoundManager;
+import br.com.spacedefender.audio.SoundType;
 import br.com.spacedefender.enemies.BossShip;
 import br.com.spacedefender.enemies.EnemyShip;
 import br.com.spacedefender.entities.PlayerShip;
@@ -100,6 +102,9 @@ public class PowerUpManager {
             return;
         }
 
+        // Toca som de coleta de power-up
+        SoundManager.getInstance().play(SoundType.POWERUP);
+
         switch (type) {
             case DOUBLE_SCORE:
                 player.activateDoubleScore(type.getDurationMs());
@@ -118,7 +123,8 @@ public class PowerUpManager {
                 break;
 
             case NOVA_BOMB:
-                // Detonação em massa: destrói inimigos comuns e causa alto dano ao Boss
+                // Detonação em massa com som estrondoso de explosão
+                SoundManager.getInstance().play(SoundType.EXPLOSION);
                 if (enemies != null) {
                     for (EnemyShip enemy : enemies) {
                         if (enemy instanceof BossShip) {
