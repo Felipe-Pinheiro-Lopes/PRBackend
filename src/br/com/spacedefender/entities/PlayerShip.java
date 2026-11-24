@@ -275,14 +275,40 @@ public class PlayerShip extends GameObject {
             SoundManager.getInstance().play(SoundType.PLAYER_HIT);
             this.health -= damage;
             if (this.health <= 0) {
-                loseLife();
-                if (this.lives > 0) {
-                    this.health = maxHealth;
-                } else {
-                    this.health = 0;
-                }
+                this.health = 0;
             }
         }
+    }
+
+    public void reset(int screenWidth, int screenHeight) {
+        this.lives = 3;
+        this.health = this.maxHealth;
+        this.score = 0;
+        this.x = screenWidth / 2 - 25;
+        this.y = screenHeight - 80;
+        this.projectiles.clear();
+        this.doubleScoreActive = false;
+        this.tripleShotActive = false;
+        this.shieldActive = false;
+        this.upPressed = false;
+        this.downPressed = false;
+        this.leftPressed = false;
+        this.rightPressed = false;
+        this.spacePressed = false;
+    }
+
+    public void respawn(int screenWidth, int screenHeight) {
+        this.health = this.maxHealth;
+        this.x = screenWidth / 2 - 25;
+        this.y = screenHeight - 80;
+        this.projectiles.clear();
+        this.shieldActive = true;
+        this.shieldEndTime = System.currentTimeMillis() + 3000;
+        this.upPressed = false;
+        this.downPressed = false;
+        this.leftPressed = false;
+        this.rightPressed = false;
+        this.spacePressed = false;
     }
 
     public void heal(int amount) {

@@ -124,4 +124,12 @@ public class WaveManager {
     public long getSpawnIntervalMs() {
         return spawnIntervalMs;
     }
+
+    public boolean isBossWave() {
+        return currentWave == BOSS_WAVE;
+    }
+
+    public boolean isBossSpawned() {
+        return bossSpawned;
+    }
 }
