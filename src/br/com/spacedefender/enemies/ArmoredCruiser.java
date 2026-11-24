@@ -15,14 +15,18 @@ public class ArmoredCruiser extends EnemyShip {
     private static final int DEFAULT_HEALTH = 50;
     private static final int DEFAULT_POINTS = 250;
 
+    private double exactY;
+
     public ArmoredCruiser(int x, int y) {
         super(x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_SPEED, DEFAULT_HEALTH, DEFAULT_POINTS);
+        this.exactY = y;
     }
 
     @Override
     public void update() {
-        // Desce continuamente de forma pesada e firme
-        setY(getY() + getSpeed());
+        // Desce continuamente de forma pesada e cadenciada (0.8 px/frame)
+        exactY += 0.8;
+        setY((int) exactY);
     }
 
     @Override
