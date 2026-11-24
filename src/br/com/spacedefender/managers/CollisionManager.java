@@ -1,5 +1,7 @@
 package br.com.spacedefender.managers;
 
+import br.com.spacedefender.audio.SoundManager;
+import br.com.spacedefender.audio.SoundType;
 import br.com.spacedefender.enemies.EnemyShip;
 import br.com.spacedefender.entities.PlayerShip;
 import br.com.spacedefender.projectiles.EnemyProjectile;
@@ -65,6 +67,7 @@ public class CollisionManager {
 
                     // Se a blindagem do inimigo zerar, pontua e agenda remoção
                     if (enemy.isDestroyed()) {
+                        SoundManager.getInstance().play(SoundType.EXPLOSION);
                         player.addScore(enemy.getPointValue());
                         enemiesToRemove.add(enemy);
                         if (powerUpManager != null) {
@@ -89,6 +92,7 @@ public class CollisionManager {
                 // A nave inimiga colidida é destruída no choque (a não ser que seja o Boss)
                 enemy.takeDamage(50);
                 if (enemy.isDestroyed()) {
+                    SoundManager.getInstance().play(SoundType.EXPLOSION);
                     enemiesToRemove.add(enemy);
                     if (powerUpManager != null) {
                         powerUpManager.onEnemyDestroyed(enemy);
