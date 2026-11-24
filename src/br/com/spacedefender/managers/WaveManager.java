@@ -1,6 +1,7 @@
 package br.com.spacedefender.managers;
 
 import br.com.spacedefender.enemies.ArmoredCruiser;
+import br.com.spacedefender.enemies.BossShip;
 import br.com.spacedefender.enemies.EnemyShip;
 import br.com.spacedefender.enemies.ScoutShip;
 import java.util.List;
@@ -11,12 +12,14 @@ import java.util.Random;
  * Controla o equilíbrio de dificuldade, alternância polimórfica de naves geradas e progressão de ondas.
  */
 public class WaveManager {
-    private int currentWave = 1;
+private int currentWave = 1;
     private long lastSpawnTime = 0;
-    private long spawnIntervalMs = 2000; // Inicia gerando um inimigo a cada 2 segundos
+    private long spawnIntervalMs = 2000;
     private int enemiesSpawnedInWave = 0;
     private int enemiesPerWave = 8;
     private final Random random = new Random();
+    private static final int BOSS_WAVE = 5;
+    private boolean bossSpawned = false;
 
     /**
      * Atualiza o temporizador de surgimento e instancia novos inimigos na coleção ativa.
@@ -28,6 +31,13 @@ public class WaveManager {
         }
 
         long now = System.currentTimeMillis();
+
+        if (currentWave == BOSS_WAVE && !bossSpawned) {
+            enemies.add(new BossShip(320, -50));
+            bossSpawned = true;
+            enemiesSpawnedInWave = enemiesPerWave;
+            return;
+        }
 
         // Verifica se a onda atual ainda tem inimigos pendentes para spawnar
         if (enemiesSpawnedInWave < enemiesPerWave) {
@@ -83,6 +93,7 @@ public class WaveManager {
         this.enemiesPerWave = 8;
         this.spawnIntervalMs = 2000;
         this.lastSpawnTime = 0;
+        this.bossSpawned = false;
     }
 
     public int getCurrentWave() {
