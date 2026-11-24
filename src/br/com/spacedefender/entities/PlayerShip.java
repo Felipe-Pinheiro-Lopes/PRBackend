@@ -25,11 +25,12 @@ public class PlayerShip extends GameObject {
     private WeaponType activeWeapon = WeaponType.LASER;
     private List<Projectile> projectiles = new ArrayList<>();
 
-    // Variáveis booleanas para movimentação fluida (Dica do Mestre)
+    // Variáveis booleanas para movimentação e disparo fluidos (Dica do Mestre)
     private boolean upPressed = false;
     private boolean downPressed = false;
     private boolean leftPressed = false;
     private boolean rightPressed = false;
+    private boolean spacePressed = false;
 
     public PlayerShip(int screenWidth, int screenHeight) {
         super(
@@ -58,9 +59,7 @@ public class PlayerShip extends GameObject {
             rightPressed = pressed;
         }
         if (keyCode == KeyEvent.VK_SPACE) {
-            if (pressed) {
-                shoot();
-            }
+            spacePressed = pressed;
         }
         // Alternância de Armas (Polimorfismo dinâmico)
         if (pressed) {
@@ -124,6 +123,11 @@ public class PlayerShip extends GameObject {
         }
         if (y > 600 - height) {
             y = 600 - height;
+        }
+
+        // Disparo contínuo e sincronizado ao Game Loop durante a movimentação da nave
+        if (spacePressed) {
+            shoot();
         }
 
         // Atualização polimórfica dos projéteis
@@ -241,6 +245,9 @@ public class PlayerShip extends GameObject {
 
     public boolean isRightPressed() { return rightPressed; }
     public void setRightPressed(boolean rightPressed) { this.rightPressed = rightPressed; }
+
+    public boolean isSpacePressed() { return spacePressed; }
+    public void setSpacePressed(boolean spacePressed) { this.spacePressed = spacePressed; }
 
     public WeaponType getActiveWeapon() {
         return activeWeapon;
