@@ -37,12 +37,15 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
     private List<EnemyShip> enemies = new ArrayList<>();
     private CollisionManager collisionManager = new CollisionManager();
     private WaveManager waveManager = new WaveManager();
+    private SpaceBackground background;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.setDoubleBuffered(true);
+
+        this.background = new SpaceBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // Instancia a nave do jogador centralizada na base da tela
         this.player = new PlayerShip(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -92,9 +95,12 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
     }
 
     /**
-     * Atualiza a lógica do jogo (física da nave, ondas de inimigos, projéteis e resolução de colisões).
+     * Atualiza a lógica do jogo (física da nave, ondas de inimigos, projéteis, resolução de colisões e fundo estelar).
      */
     public void update() {
+        // Atualiza a movimentação do fundo espacial Parallax
+        background.update();
+
         player.update();
 
         // Gera novas ondas de invasores inimigos
@@ -130,12 +136,15 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-        // Desenha todos os inimigos ativos na tela
+        // 1. Renderiza o cenário cósmico Parallax ao fundo
+        background.draw(g2d);
+
+        // 2. Desenha todos os inimigos ativos na tela
         for (EnemyShip enemy : enemies) {
             enemy.draw(g2d);
         }
 
-        // Desenha a nave do jogador
+        // 3. Desenha a nave do jogador
         player.draw(g2d);
 
         // --- HUD SUPERIOR COMPLETO ---
@@ -230,6 +239,10 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
 
     public WaveManager getWaveManager() {
         return waveManager;
+    }
+
+    public SpaceBackground getSpaceBackground() {
+        return background;
     }
 
     public Timer getGameTimer() {
