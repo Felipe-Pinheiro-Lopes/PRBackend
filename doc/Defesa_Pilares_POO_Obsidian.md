@@ -546,3 +546,4 @@ public class ScoreEntry implements Serializable, Comparable<ScoreEntry> {
 
 3. **Encapsulamento e Polimorfismo (Felipe):**
    > *"O Encapsulamento protege a saúde e o placar do jogador: ao tomar dano, o método `takeDamage()` checa se o escudo de força absorve o impacto; ao pontuar, `addScore()` dobra os pontos automaticamente se o buff de 2X estiver ativo. E o Polimorfismo brilha no Game Loop do `GamePanel`, onde iteramos sobre uma `List<EnemyShip>` executando a IA e a renderização gráfica única de cada modelo de nave em tempo de execução!"*
+
