@@ -3,6 +3,7 @@ package br.com.spacedefender.core;
 import br.com.spacedefender.enemies.EnemyShip;
 import br.com.spacedefender.entities.PlayerShip;
 import br.com.spacedefender.managers.CollisionManager;
+import br.com.spacedefender.managers.PowerUpManager;
 import br.com.spacedefender.managers.WaveManager;
 import br.com.spacedefender.projectiles.EnemyProjectile;
 import javax.swing.JPanel;
@@ -39,6 +40,7 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
     private List<EnemyProjectile> enemyProjectiles = new ArrayList<>();
     private CollisionManager collisionManager = new CollisionManager();
     private WaveManager waveManager = new WaveManager();
+    private PowerUpManager powerUpManager = new PowerUpManager();
     private SpaceBackground background;
 
     public GamePanel() {
@@ -48,6 +50,7 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
         this.setDoubleBuffered(true);
 
         this.background = new SpaceBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
+        this.collisionManager.setPowerUpManager(this.powerUpManager);
 
         // Instancia a nave do jogador centralizada na base da tela
         this.player = new PlayerShip(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -121,6 +124,9 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
 
         // Resolução de colisões AABB (Tiros vs Inimigos, Inimigos vs Jogador e Tiros Inimigos vs Jogador)
         collisionManager.checkCollisions(player, enemies, enemyProjectiles);
+
+        // Atualização e física dos Power-Ups (descida, coleta e buffs)
+        powerUpManager.update(player, enemies);
     }
 
     /**
@@ -157,7 +163,10 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
             ep.draw(g2d);
         }
 
-        // 4. Desenha a nave do jogador
+        // 4. Desenha os Power-Ups flutuantes no espaço
+        powerUpManager.draw(g2d);
+
+        // 5. Desenha a nave do jogador
         player.draw(g2d);
 
         // --- HUD SUPERIOR COMPLETO ---
@@ -236,10 +245,32 @@ public class GamePanel extends JPanel implements ActionListener, Runnable {
 
         g2d.setColor(Color.WHITE);
         g2d.drawRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+        // 5. Indicadores Ativos de Power-Ups (Buffs temporários)
+        int buffX = 320;
+        g2d.setFont(new Font("SansSerif", Font.BOLD, 11));
+        if (player.isDoubleScoreActive()) {
+            g2d.setColor(new Color(255, 215, 0));
+            g2d.drawString("[2X SCORE " + player.getDoubleScoreRemainingSeconds() + "s]", buffX, 22);
+            buffX += 95;
+        }
+        if (player.isTripleShotActive()) {
+            g2d.setColor(new Color(0, 220, 255));
+            g2d.drawString("[TRIPLE " + player.getTripleShotRemainingSeconds() + "s]", buffX, 22);
+            buffX += 85;
+        }
+        if (player.isShieldActive()) {
+            g2d.setColor(new Color(120, 255, 180));
+            g2d.drawString("[SHIELD " + player.getShieldRemainingSeconds() + "s]", buffX, 22);
+        }
     }
 
     public PlayerShip getPlayer() {
         return player;
+    }
+
+    public PowerUpManager getPowerUpManager() {
+        return powerUpManager;
     }
 
     public List<EnemyShip> getEnemies() {

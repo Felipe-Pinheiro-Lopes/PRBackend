@@ -25,6 +25,14 @@ public class PlayerShip extends GameObject {
     private WeaponType activeWeapon = WeaponType.LASER;
     private List<Projectile> projectiles = new ArrayList<>();
 
+    // Estados e Temporizadores de Power-Ups
+    private boolean doubleScoreActive = false;
+    private long doubleScoreEndTime = 0;
+    private boolean tripleShotActive = false;
+    private long tripleShotEndTime = 0;
+    private boolean shieldActive = false;
+    private long shieldEndTime = 0;
+
     // Variáveis booleanas para movimentação e disparo fluidos (Dica do Mestre)
     private boolean upPressed = false;
     private boolean downPressed = false;
@@ -75,17 +83,31 @@ public class PlayerShip extends GameObject {
 
     /**
      * Dispara projéteis respeitando a cadência específica (cooldown) da arma ativa.
-     * Instancia o projétil correspondente e adiciona à coleção genérica de Projectile.
+     * Suporta disparo simples ou tiro triplo expandido caso o buff de TRIPLE_SHOT esteja ativo.
      */
     private void shoot() {
         long now = System.currentTimeMillis();
         if (now - lastShotTime >= activeWeapon.getCooldownMs()) {
             if (activeWeapon == WeaponType.LASER) {
-                // Laser Pulse: rápido, fino, centrado no bico
-                projectiles.add(new LaserPulse(getX() + getWidth() / 2 - 2, getY() - 14));
+                if (tripleShotActive) {
+                    // Tiro Triplo: Asa esquerda, bico central e asa direita
+                    projectiles.add(new LaserPulse(getX() + 2, getY() + 6));
+                    projectiles.add(new LaserPulse(getX() + getWidth() / 2 - 2, getY() - 14));
+                    projectiles.add(new LaserPulse(getX() + getWidth() - 6, getY() + 6));
+                } else {
+                    // Laser Pulse padrão centrado no bico
+                    projectiles.add(new LaserPulse(getX() + getWidth() / 2 - 2, getY() - 14));
+                }
             } else if (activeWeapon == WeaponType.PLASMA) {
-                // Plasma Ball: pesado, esfera maior, centrado no bico
-                projectiles.add(new PlasmaBall(getX() + getWidth() / 2 - 6, getY() - 14));
+                if (tripleShotActive) {
+                    // Tríade de Plasma destrutiva
+                    projectiles.add(new PlasmaBall(getX() - 4, getY() + 4));
+                    projectiles.add(new PlasmaBall(getX() + getWidth() / 2 - 6, getY() - 14));
+                    projectiles.add(new PlasmaBall(getX() + getWidth() - 8, getY() + 4));
+                } else {
+                    // Plasma Ball padrão centrado no bico
+                    projectiles.add(new PlasmaBall(getX() + getWidth() / 2 - 6, getY() - 14));
+                }
             }
             lastShotTime = now;
         }
@@ -128,6 +150,18 @@ public class PlayerShip extends GameObject {
         // Disparo contínuo e sincronizado ao Game Loop durante a movimentação da nave
         if (spacePressed) {
             shoot();
+        }
+
+        // Expiração dos efeitos temporários de Power-Ups
+        long now = System.currentTimeMillis();
+        if (doubleScoreActive && now > doubleScoreEndTime) {
+            doubleScoreActive = false;
+        }
+        if (tripleShotActive && now > tripleShotEndTime) {
+            tripleShotActive = false;
+        }
+        if (shieldActive && now > shieldEndTime) {
+            shieldActive = false;
         }
 
         // Atualização polimórfica dos projéteis
@@ -202,6 +236,16 @@ public class PlayerShip extends GameObject {
         g2d.fillRect(x, y + height - 10, 3, 10);
         g2d.fillRect(x + width - 3, y + height - 10, 3, 10);
 
+        // Efeito visual do Escudo Protetor (Power-Up SHIELD_BARRIER ativo)
+        if (shieldActive) {
+            long time = System.currentTimeMillis();
+            int alpha = (int) (110 + 40 * Math.sin(time * 0.008));
+            g2d.setColor(new Color(0, 220, 255, Math.max(50, Math.min(200, alpha))));
+            g2d.fillOval(x - 8, y - 8, width + 16, height + 16);
+            g2d.setColor(new Color(255, 255, 255, 220));
+            g2d.drawOval(x - 8, y - 8, width + 16, height + 16);
+        }
+
         // Desenha os projéteis disparados
         for (Projectile p : projectiles) {
             p.draw(g2d);
@@ -218,6 +262,11 @@ public class PlayerShip extends GameObject {
     public boolean isAlive() { return lives > 0; }
 
     public void takeDamage(int damage) {
+        // Se o escudo de força estiver ativo, o dano é 100% absorvido!
+        if (shieldActive) {
+            return;
+        }
+
         if (damage > 0) {
             this.health -= damage;
             if (this.health <= 0) {
@@ -231,8 +280,55 @@ public class PlayerShip extends GameObject {
         }
     }
 
+    public void heal(int amount) {
+        if (amount > 0) {
+            this.health = Math.min(this.maxHealth, this.health + amount);
+        }
+    }
+
     public int getScore() { return score; }
-    public void addScore(int points) { score += points; }
+
+    public void addScore(int points) {
+        if (points > 0) {
+            if (doubleScoreActive) {
+                score += (points * 2);
+            } else {
+                score += points;
+            }
+        }
+    }
+
+    // Gerenciamento e Ativação de Buffs
+    public void activateDoubleScore(long durationMs) {
+        this.doubleScoreActive = true;
+        this.doubleScoreEndTime = System.currentTimeMillis() + durationMs;
+    }
+
+    public void activateTripleShot(long durationMs) {
+        this.tripleShotActive = true;
+        this.tripleShotEndTime = System.currentTimeMillis() + durationMs;
+    }
+
+    public void activateShield(long durationMs) {
+        this.shieldActive = true;
+        this.shieldEndTime = System.currentTimeMillis() + durationMs;
+    }
+
+    public boolean isDoubleScoreActive() { return doubleScoreActive; }
+    public boolean isTripleShotActive() { return tripleShotActive; }
+    public boolean isShieldActive() { return shieldActive; }
+
+    public long getDoubleScoreRemainingSeconds() {
+        return Math.max(0, (doubleScoreEndTime - System.currentTimeMillis() + 999) / 1000);
+    }
+
+    public long getTripleShotRemainingSeconds() {
+        return Math.max(0, (tripleShotEndTime - System.currentTimeMillis() + 999) / 1000);
+    }
+
+    public long getShieldRemainingSeconds() {
+        return Math.max(0, (shieldEndTime - System.currentTimeMillis() + 999) / 1000);
+    }
 
     public boolean isUpPressed() { return upPressed; }
     public void setUpPressed(boolean upPressed) { this.upPressed = upPressed; }

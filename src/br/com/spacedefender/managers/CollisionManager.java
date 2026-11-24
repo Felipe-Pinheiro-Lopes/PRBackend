@@ -14,6 +14,18 @@ import java.util.List;
  * atualizando placar e integridade dos envolvidos.
  */
 public class CollisionManager {
+    private PowerUpManager powerUpManager;
+
+    public CollisionManager() {
+    }
+
+    public CollisionManager(PowerUpManager powerUpManager) {
+        this.powerUpManager = powerUpManager;
+    }
+
+    public void setPowerUpManager(PowerUpManager powerUpManager) {
+        this.powerUpManager = powerUpManager;
+    }
 
     /**
      * Sobrecarga de compatibilidade para 2 parâmetros.
@@ -55,6 +67,9 @@ public class CollisionManager {
                     if (enemy.isDestroyed()) {
                         player.addScore(enemy.getPointValue());
                         enemiesToRemove.add(enemy);
+                        if (powerUpManager != null) {
+                            powerUpManager.onEnemyDestroyed(enemy);
+                        }
                     }
                     break; // Um projétil consome seu impacto em um único alvo
                 }
@@ -75,6 +90,9 @@ public class CollisionManager {
                 enemy.takeDamage(50);
                 if (enemy.isDestroyed()) {
                     enemiesToRemove.add(enemy);
+                    if (powerUpManager != null) {
+                        powerUpManager.onEnemyDestroyed(enemy);
+                    }
                 }
             }
         }
